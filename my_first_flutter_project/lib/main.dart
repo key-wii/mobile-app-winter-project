@@ -1,172 +1,247 @@
-//import 'dart:ffi';
+import 'dart:async';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 
 import 'package:flutter/material.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
-import 'mynextscreen.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:photo_gallery/photo_gallery.dart';
+import 'package:transparent_image/transparent_image.dart';
+import 'package:video_player/video_player.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
 
-class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
 
-  // This widget is the root of your application.
+class _MyAppState extends State<MyApp> {
+  List<Album>? _albums;
+  bool loading= false;
+
+  @override
+  void initState() {
+    super.initState();
+    loading = true;
+    initAsync();
+  }
+
+  Future<void> initAsync() async {
+    if (await _promptPermissionSetting()) {
+      List<Album> albums =
+      await PhotoGallery.listAlbums(mediumType: MediumType.image);
+      setState(() {
+        _albums = albums;
+        loading = false;
+      });
+    }
+    setState(() {
+      loading = false;
+    });
+  }
+
+  Future<bool> _promptPermissionSetting() async {
+    if (Platform.isIOS &&
+      await Permission.storage.request().isGranted &&
+      await Permission.photos.request().isGranted ||
+      Platform.isAndroid && await Permission.storage.request().isGranted) {
+        return true;
+    }
+    return false;
+  }
+
+  static const _kFontFam = 'MyFlutterApp';
+  static const String? _kFontPkg = null;
+  static const IconData trash = IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      title: 'Gallery App',
+      home: Scaffold(
+        backgroundColor: Color(0xFF2C2F33),
+        appBar: AppBar(
+          title: const Text('Gallery'),
+          actions: [
+            IconButton(
+              icon: const Icon(trash),
+              onPressed: () => Navigator.of(context).pop(),
+              //WORKING ON THIS.
+              //SHOULD DISPLAY TRASH ICON FOR DELETING FOLDERS
+            ),
+          ],
+        ),
+        body: loading ? const Center(
+          child: CircularProgressIndicator(),
+        ) :
+        LayoutBuilder(
+          builder: (context, constraints) {
+            double gridW = (constraints.maxWidth) / 2;
+            double gridH = gridW;
+            return Container(
+              padding: EdgeInsets.all(0),
+              child: GridView.count(
+                crossAxisCount: 2,
+                children: <Widget>[
+                  ...?_albums?.map(
+                    (album) => GestureDetector(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => AlbumPage(album)
+                        )
+                      ),
+                      child: Column(
+                        children: <Widget>[
+                          ClipRRect(
+                            child: Container(
+                              height: gridH - 40,
+                              width: gridW,
+                              child: FadeInImage(
+                                fit: BoxFit.cover,
+                                placeholder: MemoryImage(kTransparentImage),
+                                image: AlbumThumbnailProvider(
+                                  albumId: album.id,
+                                  mediumType: album.mediumType,
+                                  highQuality: true,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.topLeft,
+                            padding: EdgeInsets.only(left: 3.0),
+                            child: Text(
+                              album.name ?? "Unnamed Album",
+                              textAlign: TextAlign.start,
+                              maxLines: 1,
+                              style: const TextStyle(
+                                height: 1.25,
+                                fontSize: 16,
+                                color: Color(0xFF99AAB5)
+                              ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.topLeft,
+                            padding: EdgeInsets.only(left: 3.0),
+                            child: Text(
+                              album.count.toString(),
+                              textAlign: TextAlign.start,
+                              maxLines: 1,
+                              style: const TextStyle(
+                                height: 1.2,
+                                fontSize: 16,
+                                color: Color(0xFF5865F2)
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+class AlbumPage extends StatefulWidget {
+  final Album album;
 
-  final String title;
+  AlbumPage(Album album) : album = album;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<StatefulWidget> createState() => AlbumPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class AlbumPageState extends State<AlbumPage> {
+  List<Medium>? media;
 
-  final urlImages = [
-    'https://images.unsplash.com/photo-1456926631375-92c8ce872def?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NHx8bGVvcGFyZHN8ZW58MHx8MHx8&w=1000&q=80',
-    'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?ixlib=rb-1.2.1'
-  ];
-
-  bool empty = true;
-  late XFile? _Ximage;
-  late File _image;
-
-  Future getImageFromCamera() async {
-    var image = await ImagePicker().pickImage(source: ImageSource.camera);
-
-    setState(() {
-      empty = false;
-      _Ximage = image;
-      _image = File(_Ximage!.path);
-    });
+  @override
+  void initState() {
+    super.initState();
+    initAsync();
   }
 
-  Future getImageFromGallery() async {
-    var image = await ImagePicker().pickImage(source: ImageSource.gallery);
-
+  void initAsync() async {
+    MediaPage imagePage = await widget.album.listMedia();
     setState(() {
-      empty = false;
-      _Ximage = image;
-      _image = File(_Ximage!.path);
+      media = imagePage.items;
     });
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Center(
-          child: Text(
-            "Image Picker",
-            style: TextStyle(fontSize: 30),
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Gallery App',
+      home: Scaffold(
+        backgroundColor: Color(0xFF2C2F33),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_outlined),
+            onPressed: () => Navigator.of(context).pop(),
           ),
+          title: Text(widget.album.name ?? "Untitled"),
         ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: 200.0,
-            child: Center(
-              child: empty == true ? Text('No image') : Image.file(_image),
-            ),
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        body: GridView.count(
+          crossAxisCount: 2,
           children: <Widget>[
-            FloatingActionButton(
-              onPressed: getImageFromCamera,
-              tooltip: "Pick Image form gallery",
-              child: Icon(Icons.add_a_photo),
+            ...?media?.map(
+                  (medium) => GestureDetector(
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => ViewerPage(medium))),
+                child: Container(
+                  color: Color(0xFF404EED),
+                  child: FadeInImage(
+                    fit: BoxFit.cover,
+                    placeholder: MemoryImage(kTransparentImage),
+                    image: ThumbnailProvider(
+                      mediumId: medium.id,
+                      mediumType: medium.mediumType,
+                      highQuality: true,
+                    ),
+                  ),
+                ),
+              ),
             ),
-            FloatingActionButton(
-              onPressed: getImageFromGallery,
-              tooltip: "Pick Image from camera",
-              child: Icon(Icons.camera_alt),
-            )
           ],
         ),
-        Center(
-          child: InkWell(
-            child: Ink.image(
-              image: NetworkImage(urlImages[0]),
-              height: 300,
-              fit: BoxFit.cover,
-            ),
-            onTap: openGallery,
-          ),
-        ),
-      ],
-    ),
-  );
-
-  void openGallery() => Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => GalleryWidget(
-        urlImages: urlImages,
-        index: 0,
       ),
-  ));
+    );
+  }
 }
 
-class GalleryWidget extends StatefulWidget {
-  final PageController pageController;
-  final List<String> urlImages;
-  final int index;
+class ViewerPage extends StatelessWidget {
+  final Medium medium;
 
-  GalleryWidget({
-    required this.urlImages,
-    this.index = 0,
-  }) : pageController = PageController(initialPage: index);
+  ViewerPage(Medium medium) : medium = medium;
 
   @override
-  State<StatefulWidget> createState() => _GalleryWidgetState();
-}
-
-class _GalleryWidgetState extends State<GalleryWidget> {
-  late int index = widget.index;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    body: Stack(
-      alignment: Alignment.bottomLeft,
-      children: [
-        PhotoViewGallery.builder(
-          pageController: widget.pageController,
-          itemCount: widget.urlImages.length,
-          builder: (context, index) {
-            final urlImage = widget.urlImages[index];
-
-            return PhotoViewGalleryPageOptions(
-              imageProvider: NetworkImage(urlImage),
-              minScale: PhotoViewComputedScale.contained,
-              maxScale: PhotoViewComputedScale.contained * 4,
-            );
-          },
-          onPageChanged: (index) => setState(() => this.index = index),
-        ),
-        Container(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            'Image ${index + 1}/${widget.urlImages.length}',
-            style: TextStyle(color: Colors.white, fontSize: 1)
+  Widget build(BuildContext context) {
+    DateTime? date = medium.creationDate ?? medium.modifiedDate;
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: Icon(Icons.arrow_back_ios),
           ),
+          title: date != null ? Text(date.toLocal().toString()) : null,
         ),
-      ],
-    ),
-  );
+        body: Container(
+          alignment: Alignment.center,
+          child: FadeInImage(
+            fit: BoxFit.cover,
+            placeholder: MemoryImage(kTransparentImage),
+            image: PhotoProvider(mediumId: medium.id),
+          )
+        ),
+      ),
+    );
+  }
 }
