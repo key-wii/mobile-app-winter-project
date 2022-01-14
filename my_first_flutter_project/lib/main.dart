@@ -5,7 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_gallery/photo_gallery.dart';
 import 'package:transparent_image/transparent_image.dart';
-import 'package:video_player/video_player.dart';
+
+const Color colorBar = Color(0xFF23272A);
+const Color colorBg = Color(0xFF2C2F33);
+const Color colorText = Color(0xFF99AAB5);
+const Color colorText2 = Color(0xFF5865F2);
+const Color colorLoadImg = Color(0xFF404EED);
+const Color colorRed = Color(0xFFFF0000);
 
 void main() {
   runApp(MyApp());
@@ -60,15 +66,26 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Gallery App',
       home: Scaffold(
-        backgroundColor: Color(0xFF2C2F33),
+        backgroundColor: colorBg,
         appBar: AppBar(
-          title: const Text('Gallery'),
+          backgroundColor: colorBar,
+          title: const Text(
+              'Gallery',
+              style: TextStyle(
+                  fontSize: 24.0,
+                  color: colorText
+              ),
+          ),
           actions: [
             IconButton(
-              icon: const Icon(trash),
+              icon: const Icon(
+                trash,
+                size: 32.0,
+                color: colorRed
+              ),
               onPressed: () => Navigator.of(context).pop(),
-              //WORKING ON THIS.
-              //SHOULD DISPLAY TRASH ICON FOR DELETING FOLDERS
+              //TRASH BUTTON IS CURRENTLY NON-FUNCTIONAL
+              //CURRENTLY WORKING ON THIS
             ),
           ],
         ),
@@ -117,8 +134,8 @@ class _MyAppState extends State<MyApp> {
                               maxLines: 1,
                               style: const TextStyle(
                                 height: 1.25,
-                                fontSize: 16,
-                                color: Color(0xFF99AAB5)
+                                fontSize: 16.0,
+                                color: colorText
                               ),
                             ),
                           ),
@@ -131,8 +148,8 @@ class _MyAppState extends State<MyApp> {
                               maxLines: 1,
                               style: const TextStyle(
                                 height: 1.2,
-                                fontSize: 16,
-                                color: Color(0xFF5865F2)
+                                fontSize: 16.0,
+                                color: colorText2
                               ),
                             ),
                           ),
@@ -180,13 +197,20 @@ class AlbumPageState extends State<AlbumPage> {
     return MaterialApp(
       title: 'Gallery App',
       home: Scaffold(
-        backgroundColor: Color(0xFF2C2F33),
+        backgroundColor: colorBg,
         appBar: AppBar(
+          backgroundColor: colorBar,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_outlined),
+            icon: const Icon(Icons.arrow_back_outlined),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: Text(widget.album.name ?? "Untitled"),
+          title: Text(
+            widget.album.name ?? "Untitled",
+            style: const TextStyle(
+              fontSize: 22.0,
+              color: colorText
+            ),
+          ),
         ),
         body: GridView.count(
           crossAxisCount: 2,
@@ -196,7 +220,7 @@ class AlbumPageState extends State<AlbumPage> {
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => ViewerPage(medium))),
                 child: Container(
-                  color: Color(0xFF404EED),
+                  color: colorLoadImg,
                   child: FadeInImage(
                     fit: BoxFit.cover,
                     placeholder: MemoryImage(kTransparentImage),
@@ -226,12 +250,20 @@ class ViewerPage extends StatelessWidget {
     DateTime? date = medium.creationDate ?? medium.modifiedDate;
     return MaterialApp(
       home: Scaffold(
+        backgroundColor: colorBg,
         appBar: AppBar(
+          backgroundColor: colorBar,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(Icons.arrow_back_ios),
+            icon: const Icon(Icons.arrow_back_outlined),
           ),
-          title: date != null ? Text(date.toLocal().toString()) : null,
+          title: date != null ? Text(
+            date.toLocal().toString(),
+            style: const TextStyle(
+                fontSize: 20.0,
+                color: colorText
+            ),
+          ) : null,
         ),
         body: Container(
           alignment: Alignment.center,
