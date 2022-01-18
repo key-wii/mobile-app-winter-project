@@ -17,6 +17,12 @@ void main() {
   runApp(MyApp());
 }
 
+const _kFontFam = 'MyFlutterApp';
+const String? _kFontPkg = null;
+const IconData trash = IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+
+//Homepage: Folders
+
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
@@ -56,10 +62,6 @@ class _MyAppState extends State<MyApp> {
     }
     return false;
   }
-
-  static const _kFontFam = 'MyFlutterApp';
-  static const String? _kFontPkg = null;
-  static const IconData trash = IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 
   @override
   Widget build(BuildContext context) {
@@ -167,6 +169,8 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
+//Folder: Images
+
 class AlbumPage extends StatefulWidget {
   final Album album;
 
@@ -203,6 +207,7 @@ class AlbumPageState extends State<AlbumPage> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_outlined),
             onPressed: () => Navigator.of(context).pop(),
+            tooltip: 'Back',
           ),
           title: Text(
             widget.album.name ?? "Untitled",
@@ -240,30 +245,75 @@ class AlbumPageState extends State<AlbumPage> {
   }
 }
 
+//Viewing Image
+
 class ViewerPage extends StatelessWidget {
   final Medium medium;
 
   ViewerPage(Medium medium) : medium = medium;
 
+  void deleteFile(_file) async {
+    //final PermissionHandler _permissionHandler = PermissionHandler();
+    //var result = await _permissionHandler.requestPermissions([PermissionGroup.storage]);
+
+    File file = await _file;
+    file.delete();
+  }
+
   @override
   Widget build(BuildContext context) {
     DateTime? date = medium.creationDate ?? medium.modifiedDate;
+    String? name = medium.filename;
+
     return MaterialApp(
       home: Scaffold(
         backgroundColor: colorBg,
         appBar: AppBar(
           backgroundColor: colorBar,
-          leading: IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_outlined),
+          leading: Row(
+            children: <Widget>[
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.arrow_back_outlined),
+                tooltip: 'Back',
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    name.toString(),
+                    //textAlign: TextAlign.left,
+                    style: const TextStyle(
+                        fontSize: 20.0,
+                        color: colorText
+                    ),
+                  ),
+                  Text(
+                    date!.toLocal().toString(),
+                    //textAlign: TextAlign.left,
+                    style: const TextStyle(
+                        fontSize: 15.0,
+                        color: colorText2
+                    ),
+                  ),
+                ]
+              ),
+            ]
           ),
-          title: date != null ? Text(
-            date.toLocal().toString(),
-            style: const TextStyle(
-                fontSize: 20.0,
-                color: colorText
+          actions: [
+            IconButton(
+              icon: const Icon(
+                  trash,
+                  size: 32.0,
+                  color: colorRed
+              ),
+              onPressed: () => deleteFile(medium.getFile()),
+              tooltip: 'Delete',
+              //TRASH BUTTON IS CURRENTLY NON-FUNCTIONAL
+              //CURRENTLY WORKING ON THIS
             ),
-          ) : null,
+          ],
         ),
         body: Container(
           alignment: Alignment.center,

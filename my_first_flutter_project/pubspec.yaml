@@ -37,7 +37,6 @@ dependencies:
   photo_gallery: ^1.1.1
   permission_handler: ^8.3.0
   transparent_image: ^2.0.0
-  video_player: ^2.2.11
 
 dev_dependencies:
   flutter_test:
