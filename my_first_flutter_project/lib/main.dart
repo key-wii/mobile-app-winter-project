@@ -253,6 +253,9 @@ class ViewerPage extends StatelessWidget {
   ViewerPage(Medium medium) : medium = medium;
 
   void deleteFile(_file) async {
+    //final PermissionHandler _permissionHandler = PermissionHandler();
+    //var result = await _permissionHandler.requestPermissions([PermissionGroup.storage]);
+
     File file = await _file;
     file.delete();
   }
