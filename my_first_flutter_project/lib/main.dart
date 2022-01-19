@@ -78,18 +78,6 @@ class _MyAppState extends State<MyApp> {
                   color: colorText
               ),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(
-                trash,
-                size: 32.0,
-                color: colorRed
-              ),
-              onPressed: () => Navigator.of(context).pop(),
-              //TRASH BUTTON IS CURRENTLY NON-FUNCTIONAL
-              //CURRENTLY WORKING ON THIS
-            ),
-          ],
         ),
         body: loading ? const Center(
           child: CircularProgressIndicator(),
@@ -252,11 +240,6 @@ class ViewerPage extends StatelessWidget {
 
   ViewerPage(Medium medium) : medium = medium;
 
-  void deleteFile(_file) async {
-    File file = await _file;
-    file.delete();
-  }
-
   @override
   Widget build(BuildContext context) {
     DateTime? date = medium.creationDate ?? medium.modifiedDate;
@@ -298,19 +281,6 @@ class ViewerPage extends StatelessWidget {
               ),
             ]
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(
-                  trash,
-                  size: 32.0,
-                  color: colorRed
-              ),
-              onPressed: () => deleteFile(medium.getFile()),
-              tooltip: 'Delete',
-              //TRASH BUTTON IS CURRENTLY NON-FUNCTIONAL
-              //CURRENTLY WORKING ON THIS
-            ),
-          ],
         ),
         body: Container(
           alignment: Alignment.center,
