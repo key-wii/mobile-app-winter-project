@@ -5,16 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_gallery/photo_gallery.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 
 const Color colorBar = Color(0xFF23272A);
 const Color colorBg = Color(0xFF2C2F33);
 const Color colorText = Color(0xFF99AAB5);
 const Color colorText2 = Color(0xFF5865F2);
 const Color colorLoadImg = Color(0xFF404EED);
-const Color colorRed = Color(0xFFFF0000);
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    Phoenix(
+      child: MyApp(),
+    ),
+  );
 }
 
 //Homepage: Folders
@@ -74,6 +78,14 @@ class _MyAppState extends State<MyApp> {
                   color: colorText
               ),
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () => Phoenix.rebirth(context),
+              tooltip: 'Refresh',
+              //color: colorText2
+            ),
+          ]
         ),
         body: loading ? const Center(
           child: CircularProgressIndicator(),
@@ -191,6 +203,7 @@ class AlbumPageState extends State<AlbumPage> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_outlined),
             onPressed: () => Navigator.of(context).pop(),
+            //onPressed: () => Phoenix.rebirth(context),
             tooltip: 'Back',
           ),
           title: Text(
@@ -291,7 +304,7 @@ class ViewerPage extends StatelessWidget {
             scaleEnabled: true,
             panEnabled: true,
             minScale: 0.5,
-            maxScale: 2.0,
+            maxScale: 4.0,
             child: FadeInImage(
               fit: BoxFit.cover,
               placeholder: MemoryImage(kTransparentImage),
