@@ -260,18 +260,24 @@ class ViewerPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  Text(
-                    name.toString(),
-                    style: const TextStyle(
-                        fontSize: 20.0,
-                        color: colorText
+                  FittedBox(
+                    fit: BoxFit.contain,
+                    child: Text(
+                      name.toString(),
+                      style: const TextStyle(
+                          fontSize: 20.0,
+                          color: colorText
+                      ),
                     ),
                   ),
-                  Text(
-                    date!.toLocal().toString(),
-                    style: const TextStyle(
-                        fontSize: 15.0,
-                        color: colorText2
+                  FittedBox(
+                    fit: BoxFit.contain,
+                    child: Text(
+                      date!.toLocal().toString(),
+                      style: const TextStyle(
+                          fontSize: 15.0,
+                          color: colorText2
+                      ),
                     ),
                   ),
                 ]
