@@ -17,10 +17,6 @@ void main() {
   runApp(MyApp());
 }
 
-const _kFontFam = 'MyFlutterApp';
-const String? _kFontPkg = null;
-const IconData trash = IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
-
 //Homepage: Folders
 
 class MyApp extends StatefulWidget {
@@ -257,13 +253,15 @@ class ViewerPage extends StatelessWidget {
                 icon: const Icon(Icons.arrow_back_outlined),
                 tooltip: 'Back',
               ),
-              Column(
+            ]
+          ),
+          actions: [
+            Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
                   Text(
                     name.toString(),
-                    //textAlign: TextAlign.left,
                     style: const TextStyle(
                         fontSize: 20.0,
                         color: colorText
@@ -271,23 +269,28 @@ class ViewerPage extends StatelessWidget {
                   ),
                   Text(
                     date!.toLocal().toString(),
-                    //textAlign: TextAlign.left,
                     style: const TextStyle(
                         fontSize: 15.0,
                         color: colorText2
                     ),
                   ),
                 ]
-              ),
-            ]
-          ),
+            ),
+            Padding(padding: EdgeInsets.fromLTRB(0, 0, 20, 0))
+          ]
         ),
         body: Container(
           alignment: Alignment.center,
-          child: FadeInImage(
-            fit: BoxFit.cover,
-            placeholder: MemoryImage(kTransparentImage),
-            image: PhotoProvider(mediumId: medium.id),
+          child: InteractiveViewer(
+            scaleEnabled: true,
+            panEnabled: true,
+            minScale: 0.5,
+            maxScale: 2.0,
+            child: FadeInImage(
+              fit: BoxFit.cover,
+              placeholder: MemoryImage(kTransparentImage),
+              image: PhotoProvider(mediumId: medium.id),
+            )
           )
         ),
       ),
